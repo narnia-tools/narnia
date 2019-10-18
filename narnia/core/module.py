@@ -1,10 +1,7 @@
 class Module:
-    def __init__(self, **kwargs):
-        print(self, kwargs)
-        # self.params = dict({'topic': topic}, **kwargs)
+    def __init__(self, **params):
+        self.params = params
 
     def __call__(self, m):
-        self.m = m
-
-
-
+        setattr(m, 'bootstrap', self.params['bootstrap'])
+        return m
