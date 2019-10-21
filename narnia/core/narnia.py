@@ -1,4 +1,8 @@
+import asyncio
+
 class Narnia:
     @staticmethod
     def bootstrap(module):
-        module.bootstrap()
+        loop = asyncio.get_event_loop()
+        loop.run_until_complete(module.bootstrap())
+

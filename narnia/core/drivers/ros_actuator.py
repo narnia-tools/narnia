@@ -2,6 +2,7 @@ from abc import abstractmethod
 from functools import wraps
 import roslibpy
 import inspect
+import threading
 
 # Help
 # https://stackoverflow.com/questions/3589311/get-defining-class-of-unbound-method-object-in-python-3/25959545#25959545
