@@ -2,7 +2,9 @@ from abc import abstractmethod
 from functools import wraps
 import roslibpy
 import inspect
-import threading
+import asyncio
+
+import time
 
 # Help
 # https://stackoverflow.com/questions/3589311/get-defining-class-of-unbound-method-object-in-python-3/25959545#25959545
@@ -16,6 +18,10 @@ __ROS_LINKS__ = {
     'top_pubs': {},
     'services': {}
 }
+
+import atexit
+
+loop = asyncio.get_event_loop()
 
 
 def get_fn_name(fn):
@@ -61,8 +67,11 @@ def pull_topics_n_services():
 
 
 def register_topic_subscriber(obj, topic, msg_type, method_name):
+
+
     def fn(data):
-        getattr(obj, method_name)(data)
+        # print('.')
+        loop.call_soon_threadsafe(getattr(obj, method_name), data)
 
     roslibpy.Topic(obj.ros_client, topic, msg_type, queue_size=1).subscribe(fn)
 
@@ -106,6 +115,7 @@ def register_ros_links(obj):
             topic_idx = ROS_TOPICS['topics'].index(topic)
             msg_type = ROS_TOPICS['types'][topic_idx]
 
+
             if kind == 'top_subs':
                 register_topic_subscriber(obj, topic, msg_type, method_name)
             elif kind == 'top_pubs':
@@ -118,12 +128,13 @@ class ROSActuator:
 
     def __init__(self):
         self.ros_client = init_ros_client()
-        register_ros_links(self)
-        self.after_init()
 
-    @abstractmethod
-    def after_init(self):
-        pass
+        register_ros_links(self)
+
+
+
+
+
 
 
 class ROSDecorator:

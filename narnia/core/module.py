@@ -20,28 +20,29 @@ class Module:
 
     async def bootstrap(self):
         behaviour_cls = self.params['bootstrap']
-        default_behaviour = await self.injector.instantiate(behaviour_cls)
+        await self.injector.instantiate_all(self.params['behaviours'])
+        await self.injector.instantiate_all(self.params['drivers'])
 
-        drivers = await self.injector.instantiate_all(self.params['drivers'])
-        drivers = [d for d in drivers if getattr(d, 'perceive', None) is not None]
+        behaviour = await self.injector.instantiate(behaviour_cls)
+        while True:
+            await behaviour.action()
+            await asyncio.sleep(0.01)
 
-        async def perception_loop():
-            while True:
-                # print('act loop', await drivers[0].perceive())
-                proms = [d.perceive() for d in drivers if d is not None]
-                print('x', proms)
-                await asyncio.gather(*proms)
-                time.sleep(0.05)
+        # behaviour_classes = self.params['bootstrap']
+        #
+        # actionable_behaviours = [b for b in behaviours if getattr(b, 'action', False)]
+        #
+        # async def action_loop():
+        #     loop = asyncio.get_event_loop()
+        #
+        #     actions = [loop.create_task(behaviour.action()) for behaviour in actionable_behaviours]
+        #
+        #     while True:
+        #         done, pending = await asyncio.wait(actions, return_when=asyncio.FIRST_COMPLETED)
+        #         actions = [loop.create_task(actionable_behaviours[i].action()) if actions[i].done() else actions[i]
+        #                    for i in range(len(actionable_behaviours))]
 
-        async def action_loop():
-            while True:
-                await default_behaviour.action()
-
-        await asyncio.gather(
-            perception_loop(),
-            action_loop()
-        )
-
+        await action_loop()
 
     def __call__(self, m):
         setattr(m, 'bootstrap', self.bootstrap)

@@ -2,6 +2,7 @@ import asyncio
 
 loop = asyncio.get_event_loop()
 
+
 class Injector():
 
     def __init__(self):
@@ -28,19 +29,19 @@ class Injector():
 
         spec = self.injectables[cls]
         instance = self.new(cls)
-        # print(cls, spec, instance)
+
         for attr, dep_cls in spec.items():
             dep_instance = self.new(dep_cls)
             setattr(instance, attr, dep_instance)
 
-        if getattr(instance, 'after_init') is not None:
+        if getattr(instance, 'after_init', False):
             x = instance.after_init()
             if x is not None:
-                loop.create_task(x)
+                await x
 
         return instance
 
-    async def instantiate_all(self,clss):
+    async def instantiate_all(self, clss):
         return await asyncio.gather(*tuple([self.instantiate(x) for x in clss]))
     # if cls in self.instances:
     # else:
