@@ -70,9 +70,7 @@ def register_topic_subscriber(obj, topic, msg_type, method_name):
 
 
     def fn(data):
-        # print('.')
         loop.call_soon_threadsafe(getattr(obj, method_name), data)
-
     roslibpy.Topic(obj.ros_client, topic, msg_type, queue_size=1).subscribe(fn)
 
 
